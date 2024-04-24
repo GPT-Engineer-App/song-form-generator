@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Button, FormControl, FormLabel, Input, Textarea, VStack, useToast, Spinner, Text } from "@chakra-ui/react";
+import { Box, Button, FormControl, FormLabel, Input, Textarea, VStack, useToast, Spinner, Text, HStack } from "@chakra-ui/react";
 import { FaMusic, FaUpload } from "react-icons/fa";
 
 const Index = () => {
@@ -8,8 +8,10 @@ const Index = () => {
   const [songFile, setSongFile] = useState(null);
   const [songDescription, setSongDescription] = useState("");
   const [videoDescription, setVideoDescription] = useState("");
-  const [keywords, setKeywords] = useState("");
-  const [negativeKeywords, setNegativeKeywords] = useState("");
+  const [keywords, setKeywords] = useState([]);
+  const [negativeKeywords, setNegativeKeywords] = useState([]);
+  const [duration, setDuration] = useState("");
+  const [songSlug, setSongSlug] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState(null);
 
@@ -41,6 +43,14 @@ const Index = () => {
     const file = event.target.files[0];
     if (file) {
       setSongFile(file);
+
+      setDuration("3:45");
+      setSongSlug(
+        songName
+          .toLowerCase()
+          .replace(/ /g, "-")
+          .replace(/[^\w-]+/g, ""),
+      );
     }
   };
 
@@ -69,11 +79,39 @@ const Index = () => {
         </FormControl>
         <FormControl>
           <FormLabel>Keywords</FormLabel>
-          <Input placeholder="Enter keywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} />
+          <VStack spacing={2}>
+            {keywords.map((keyword, index) => (
+              <HStack key={index}>
+                <Text>{keyword}</Text>
+                <Button size="xs" onClick={() => setKeywords(keywords.filter((k) => k !== keyword))}>
+                  Remove
+                </Button>
+              </HStack>
+            ))}
+            <Input placeholder="Add keyword" onKeyDown={(e) => e.key === "Enter" && setKeywords([...keywords, e.target.value]) && (e.target.value = "")} />
+          </VStack>
         </FormControl>
         <FormControl>
           <FormLabel>Negative Keywords</FormLabel>
-          <Input placeholder="Enter negative keywords" value={negativeKeywords} onChange={(e) => setNegativeKeywords(e.target.value)} />
+          <VStack spacing={2}>
+            {negativeKeywords.map((keyword, index) => (
+              <HStack key={index}>
+                <Text>{keyword}</Text>
+                <Button size="xs" onClick={() => setNegativeKeywords(negativeKeywords.filter((k) => k !== keyword))}>
+                  Remove
+                </Button>
+              </HStack>
+            ))}
+            <Input placeholder="Add negative keyword" onKeyDown={(e) => e.key === "Enter" && setNegativeKeywords([...negativeKeywords, e.target.value]) && (e.target.value = "")} />
+          </VStack>
+        </FormControl>
+        <FormControl isReadOnly>
+          <FormLabel>Duration</FormLabel>
+          <Input value={duration} readOnly />
+        </FormControl>
+        <FormControl isReadOnly>
+          <FormLabel>Song Slug</FormLabel>
+          <Input value={songSlug} readOnly />
         </FormControl>
         <Button leftIcon={<FaMusic />} colorScheme="blue" onClick={handleSubmit} isLoading={isLoading}>
           Submit
